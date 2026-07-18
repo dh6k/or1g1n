@@ -13,7 +13,7 @@ included-patches = "'Brave Origin'"
 additional-included-patches = "'Change package name'"
 exclusive-patches = true
 additional-patcher-args = """\
-  -OpackageName=com.brave.browser.morphe \
+  -OpackageName=vip.dh6k.brave.or1g1n \
   -OupdatePermissions=true \
   -OupdateProviders=true \
   """

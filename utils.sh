@@ -600,7 +600,7 @@ patch_apk() {
 	tmp_files="$(pwd)/$(mktemp -d -p "$TEMP_DIR")"
 
 	local cmd="java -jar '$cli_jar' patch '$stock_input' -o '$patched_apk' $patch_bundle_args --keystore=ks.keystore \
---keystore-entry-password=123456789 --keystore-password=123456789 --signer=jhc --keystore-entry-alias=jhc -t '$tmp_files'"
+--keystore-entry-password=Morphe --keystore-password= --signer=Morphe --keystore-entry-alias=Morphe -t '$tmp_files'"
 
 	# TODO: remove this later
 	local cli_name
