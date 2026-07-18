@@ -74,6 +74,8 @@ for table_name in $(toml_get_table_names); do
 	declare -A app_args
 	patches_src=$(toml_get "$t" patches-source) || patches_src=$DEF_PATCHES_SRC
 	patches_ver=$(toml_get "$t" patches-version) || patches_ver=$DEF_PATCHES_VER
+	additional_patches_src=$(toml_get "$t" additional-patches-source) || additional_patches_src=""
+	additional_patches_ver=$(toml_get "$t" additional-patches-version) || additional_patches_ver=$DEF_PATCHES_VER
 	cli_src=$(toml_get "$t" cli-source) || cli_src=$DEF_CLI_SRC
 	cli_ver=$(toml_get "$t" cli-version) || cli_ver=$DEF_CLI_VER
 
@@ -84,16 +86,28 @@ for table_name in $(toml_get_table_names); do
 	read -r patches_jar cli_jar <<<"$PREBUILTS"
 	app_args[cli]=$cli_jar
 	app_args[ptjar]=$patches_jar
+	app_args[additional_ptjar]=""
+	if [ -n "$additional_patches_src" ]; then
+		if ! ADDITIONAL_PREBUILTS="$(get_prebuilts "$cli_src" "$cli_ver" "$additional_patches_src" "$additional_patches_ver")"; then
+			epr "Could not get additional patches prebuilt"
+			continue
+		fi
+		read -r additional_patches_jar _ <<<"$ADDITIONAL_PREBUILTS"
+		app_args[additional_ptjar]=$additional_patches_jar
+	fi
 	app_args[rv_brand]=$(toml_get "$t" rv-brand) || app_args[rv_brand]=$DEF_RV_BRAND
 
 	app_args[excluded_patches]=$(toml_get "$t" excluded-patches) || app_args[excluded_patches]=""
 	if [ -n "${app_args[excluded_patches]}" ] && [[ ${app_args[excluded_patches]} != *'"'* ]]; then abort "patch names inside excluded-patches must be quoted"; fi
 	app_args[included_patches]=$(toml_get "$t" included-patches) || app_args[included_patches]=""
 	if [ -n "${app_args[included_patches]}" ] && [[ ${app_args[included_patches]} != *'"'* ]]; then abort "patch names inside included-patches must be quoted"; fi
+	app_args[additional_included_patches]=$(toml_get "$t" additional-included-patches) || app_args[additional_included_patches]=""
+	if [ -n "${app_args[additional_included_patches]}" ] && [[ ${app_args[additional_included_patches]} != *'"'* ]]; then abort "patch names inside additional-included-patches must be quoted"; fi
 	app_args[exclusive_patches]=$(toml_get "$t" exclusive-patches) && vtf "${app_args[exclusive_patches]}" "exclusive-patches" || app_args[exclusive_patches]=false
 	app_args[version]=$(toml_get "$t" version) || app_args[version]="auto"
 	app_args[app_name]=$(toml_get "$t" app-name) || app_args[app_name]=$table_name
 	app_args[patcher_args]=$(toml_get "$t" patcher-args) || app_args[patcher_args]=""
+	app_args[additional_patcher_args]=$(toml_get "$t" additional-patcher-args) || app_args[additional_patcher_args]=""
 	app_args[table]=$table_name
 	app_args[build_mode]=$(toml_get "$t" build-mode) && {
 		if ! isoneof "${app_args[build_mode]}" both apk module; then

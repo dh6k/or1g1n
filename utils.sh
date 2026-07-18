@@ -260,7 +260,7 @@ semver_validate() {
 	[ ${#ac} = 0 ]
 }
 get_patch_last_supported_ver() {
-	local list_patches=$1 pkg_name=$2 inc_sel=$3 _exc_sel=$4 _exclusive=$5 # TODO: resolve using all of these
+	local list_patches=$1 pkg_name=$2 inc_sel=$3 _exc_sel=$4 _exclusive=$5 patches_jars=$6 # TODO: resolve using all of these
 	local op
 	if [ "$inc_sel" ]; then
 		if ! op=$(awk '{$1=$1}1' <<<"$list_patches"); then
@@ -279,18 +279,21 @@ get_patch_last_supported_ver() {
 			return
 		fi
 	fi
-	op=$(patches_list_versions "$cli_jar" "$patches_jar" "$pkg_name") || return 1
+	op=$(patches_list_versions "$cli_jar" "$patches_jars" "$pkg_name") || return 1
 	op=$(sed -n '/Most common compatible versions:/,$p' <<<"$op" | sed '1d' | awk '{$1=$1}1')
 	if [ "$op" = "Any" ]; then return; fi
 	pcount=$(head -1 <<<"$op") pcount=${pcount#*(} pcount=${pcount% *}
 	if [ -z "$pcount" ]; then
-		abort "No patches found for '$pkg_name' in patches '$patches_jar'"
+		abort "No patches found for '$pkg_name' in configured patches bundles"
 	fi
 	grep -F "($pcount patch" <<<"$op" | sed 's/ (.* patch.*//' | get_highest_ver || return 1
 }
 
 patches_list_versions() {
-	local cli_jar=$1 patches_jar=$2 pkg_name=$3 op cmd
+	local cli_jar=$1 patches_jars=$2 pkg_name=$3 op cmd
+	local patch_files=() patch_args="" patch_file
+	mapfile -t patch_files <<<"$patches_jars"
+	for patch_file in "${patch_files[@]}"; do patch_args+=" '$patch_file'"; done
 	local cmd_base="java -jar '$cli_jar' list-versions"
 
 	# TODO: remove this later
@@ -298,13 +301,17 @@ patches_list_versions() {
 	cli_name=$(basename "$cli_jar")
 	if [ "${cli_name::8}" = revanced ]; then cmd_base+=" -b"; fi
 
-	cmd="${cmd_base} --patches='$patches_jar' -f '$pkg_name'"
+	cmd="${cmd_base} --patches${patch_args} -f '$pkg_name'"
 	if op=$(eval "$cmd" 2>&1); then
 		echo "$op"
 		return
 	fi
+	if [ "${#patch_files[@]}" -ne 1 ]; then
+		epr "Could not list versions from multiple patches bundles: '$op'"
+		return 1
+	fi
 
-	cmd="${cmd_base} '$patches_jar' -f '$pkg_name'"
+	cmd="${cmd_base} '${patch_files[0]}' -f '$pkg_name'"
 	if op=$(eval "$cmd" 2>&1); then
 		echo "$op"
 		return
@@ -314,9 +321,15 @@ patches_list_versions() {
 	return 1
 }
 patches_list() {
-	local cli_jar=$1 patches_jar=$2 pkg_name=$3 op
-	if ! op=$(java -jar "$cli_jar" list-patches -p "$patches_jar" --filter-package-name "$pkg_name" --versions --packages -b 2>&1); then
-		if ! op=$(java -jar "$cli_jar" list-patches --patches "$patches_jar" -f "$pkg_name" --with-versions --with-packages 2>&1); then
+	local cli_jar=$1 patches_jars=$2 pkg_name=$3 op
+	local patch_files=()
+	mapfile -t patch_files <<<"$patches_jars"
+	if ! op=$(java -jar "$cli_jar" list-patches --patches "${patch_files[@]}" -f "$pkg_name" --with-versions --with-packages 2>&1); then
+		if [ "${#patch_files[@]}" -ne 1 ]; then
+			epr "Could not get patches list from multiple bundles $cli_jar: '$op'"
+			return 1
+		fi
+		if ! op=$(java -jar "$cli_jar" list-patches --patches "${patch_files[0]}" -f "$pkg_name" --with-versions --with-packages 2>&1); then
 			epr "Could not get patches list $cli_jar: '$op'"
 			return 1
 		fi
@@ -582,12 +595,12 @@ get_direct_resp() {
 # --------------------------------------------------
 
 patch_apk() {
-	local stock_input=$1 patched_apk=$2 patcher_args=$3 cli_jar=$4 patches_jar=$5
+	local stock_input=$1 patched_apk=$2 patch_bundle_args=$3 cli_jar=$4
 	local tmp_files
 	tmp_files="$(pwd)/$(mktemp -d -p "$TEMP_DIR")"
 
-	local cmd="java -jar '$cli_jar' patch '$stock_input' -o '$patched_apk' -p '$patches_jar' --keystore=ks.keystore \
---keystore-entry-password=123456789 --keystore-password=123456789 --signer=jhc --keystore-entry-alias=jhc -t '$tmp_files' $patcher_args"
+	local cmd="java -jar '$cli_jar' patch '$stock_input' -o '$patched_apk' $patch_bundle_args --keystore=ks.keystore \
+--keystore-entry-password=123456789 --keystore-password=123456789 --signer=jhc --keystore-entry-alias=jhc -t '$tmp_files'"
 
 	# TODO: remove this later
 	local cli_name
@@ -615,6 +628,7 @@ check_sig() {
 build_rv() {
 	eval "declare -A args=${1#*=}"
 	local version="" pkg_name=""
+	local cli_jar=${args[cli]} patches_jar=${args[ptjar]}
 	local mode_arg=${args[build_mode]} version_mode=${args[version]}
 	local app_name=${args[app_name]}
 	local app_name_l=${app_name,,}
@@ -624,10 +638,14 @@ build_rv() {
 	local arch=${args[arch]}
 	local arch_f="${arch// /}"
 
-	local p_patcher_args=()
+	local p_patcher_args=() additional_patcher_args=()
 	if [ "${args[excluded_patches]}" ]; then p_patcher_args+=("$(join_args "${args[excluded_patches]}" -d)"); fi
 	if [ "${args[included_patches]}" ]; then p_patcher_args+=("$(join_args "${args[included_patches]}" -e)"); fi
 	[ "${args[exclusive_patches]}" = true ] && p_patcher_args+=("--exclusive")
+	if [ "${args[additional_included_patches]}" ]; then
+		additional_patcher_args+=("$(join_args "${args[additional_included_patches]}" -e)")
+	fi
+	if [ "${args[additional_patcher_args]}" ]; then additional_patcher_args+=("${args[additional_patcher_args]}"); fi
 
 	local tried_dl=()
 	if [ "${args[pkg_name]}" ]; then
@@ -651,12 +669,13 @@ build_rv() {
 		return 0
 	fi
 	pr "Package name of '${table}' is '$pkg_name'"
-	local list_patches
-	list_patches=$(patches_list "$cli_jar" "$patches_jar" "$pkg_name") || return 1
+	local list_patches patches_jars=$patches_jar
+	if [ "${args[additional_ptjar]}" ]; then patches_jars+=$'\n'"${args[additional_ptjar]}"; fi
+	list_patches=$(patches_list "$cli_jar" "$patches_jars" "$pkg_name") || return 1
 	local get_latest_ver=false
 	if [ "$version_mode" = auto ]; then
 		if ! version=$(get_patch_last_supported_ver "$list_patches" "$pkg_name" \
-			"${args[included_patches]}" "${args[excluded_patches]}" "${args[exclusive_patches]}"); then
+			"${args[included_patches]}" "${args[excluded_patches]}" "${args[exclusive_patches]}" "$patches_jars"); then
 			epr "get_patch_last_supported_ver failed '$list_patches'"
 			return
 		elif [ -z "$version" ]; then get_latest_ver=true; fi
@@ -777,7 +796,11 @@ build_rv() {
 
 		local apk_output="${BUILD_DIR}/${app_name_l}-${rv_brand_f}-v${version_f}-${arch_f}.apk"
 		if [ "${NORB:-}" != true ] || { [ ! -f "$patched_apk" ] && [ ! -f "$apk_output" ]; }; then
-			if ! patch_apk "$stock_apk_to_patch" "$patched_apk" "${patcher_args[*]}" "${args[cli]}" "${args[ptjar]}"; then
+			local patch_bundle_args="-p '${args[ptjar]}' ${patcher_args[*]}"
+			if [ "${args[additional_ptjar]}" ]; then
+				patch_bundle_args+=" -p '${args[additional_ptjar]}' ${additional_patcher_args[*]}"
+			fi
+			if ! patch_apk "$stock_apk_to_patch" "$patched_apk" "$patch_bundle_args" "${args[cli]}"; then
 				epr "Building '${table}' failed!"
 				return 0
 			fi

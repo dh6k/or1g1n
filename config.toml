@@ -5,10 +5,18 @@ remove-rv-integrations-checks = false
 [Brave]
 app-name = "Brave"
 patches-source = "bufferk/morphe-patches"
+additional-patches-source = "MorpheApp/morphe-patches"
 cli-source = "MorpheApp/morphe-cli"
 build-mode = "apk"
 version = "auto"
 included-patches = "'Brave Origin'"
+additional-included-patches = "'Change package name'"
+exclusive-patches = true
+additional-patcher-args = """\
+  -OpackageName=com.brave.browser.morphe \
+  -OupdatePermissions=true \
+  -OupdateProviders=true \
+  """
 pkg-name = "com.brave.browser"
 arch = "arm64-v8a"
 direct-dlurl = "https://github.com/brave/brave-browser/releases/latest/download/Bravearm64Universal.apk"
