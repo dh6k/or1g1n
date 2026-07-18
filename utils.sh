@@ -538,20 +538,47 @@ get_archive_pkg_name() { echo "$__ARCHIVE_PKG_NAME__"; }
 # -------------------- direct --------------------
 dl_direct() {
 	local url=$1 version=${2// /-} output=$3 arch=$4 _dpi=$5
-	if ! grep -q "${version_f#v}-${arch// /}" <<<"$url"; then
+	local asset_url=$url
+	if [ -n "${__DIRECT_GITHUB_REPO__-}" ] && [ -n "${__DIRECT_GITHUB_ASSET__-}" ]; then
+		url="https://github.com/${__DIRECT_GITHUB_REPO__}/releases/download/${__DIRECT_GITHUB_TAG_PREFIX__}${version#v}/${__DIRECT_GITHUB_ASSET__}"
+		asset_url=$__DIRECT_GITHUB_ASSET__
+	elif ! grep -q "${version_f#v}-${arch// /}" <<<"$url"; then
 		epr "Given direct-dlurl for $output is not compatible. Set proper 'arch' and 'version' options."
 		return 1
 	fi
-	if [ "${url##*.}" = "apkm" ]; then
+	if [ "${asset_url##*.}" = "apkm" ]; then
 		req "$url" "${output}.apkm" || return 1
 		merge_splits "${output}.apkm" "$output"
 	else
 		req "$url" "${output}" || return 1
 	fi
 }
-get_direct_vers() { cut -d- -f2 <<<"$__DIRECT_APKNAME__"; }
+get_direct_vers() {
+	if [ -n "${__DIRECT_VERSION__-}" ]; then echo "$__DIRECT_VERSION__"; else cut -d- -f2 <<<"$__DIRECT_APKNAME__"; fi
+}
 get_direct_pkg_name() { cut -d- -f1 <<<"$__DIRECT_APKNAME__"; }
-get_direct_resp() { __DIRECT_APKNAME__=$(awk -F/ '{print $NF}' <<<"$1"); }
+get_direct_resp() {
+	local url=$1 release_json tag asset_api_url
+	__DIRECT_APKNAME__=$(awk -F/ '{print $NF}' <<<"${url%%[?#]*}")
+	__DIRECT_VERSION__=""
+	__DIRECT_GITHUB_REPO__=""
+	__DIRECT_GITHUB_ASSET__=""
+	__DIRECT_GITHUB_TAG_PREFIX__=""
+
+	if [[ $url =~ ^https://github\.com/([^/]+/[^/]+)/releases/latest/download/([^/?#]+) ]]; then
+		__DIRECT_GITHUB_REPO__=${BASH_REMATCH[1]}
+		__DIRECT_GITHUB_ASSET__=${BASH_REMATCH[2]}
+		release_json=$(gh_req "https://api.github.com/repos/${__DIRECT_GITHUB_REPO__}/releases/latest" -) || return 1
+		tag=$(jq -e -r '.tag_name // empty' <<<"$release_json") || return 1
+		asset_api_url=$(jq -e -r --arg asset "$__DIRECT_GITHUB_ASSET__" '.assets[] | select(.name == $asset) | .browser_download_url' <<<"$release_json") || {
+			epr "Could not find direct download asset '${__DIRECT_GITHUB_ASSET__}' in latest release of '${__DIRECT_GITHUB_REPO__}'"
+			return 1
+		}
+		[ -n "$tag" ] && [ -n "$asset_api_url" ] || return 1
+		__DIRECT_VERSION__=${tag#v}
+		if [[ $tag == v* ]]; then __DIRECT_GITHUB_TAG_PREFIX__=v; fi
+	fi
+}
 # --------------------------------------------------
 
 patch_apk() {
