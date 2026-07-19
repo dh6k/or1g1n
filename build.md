@@ -1,9 +1,10 @@
 Brave: 1.92.140  
 
-Install [Microg](https://github.com/ReVanced/GmsCore/releases) for non-root YouTube and YT Music APKs  
-Use [zygisk-detach](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music modules from Play Store  
+Or1g1n Brave build  
+Package: `vip.dh6k.brave.or1g1n`  
+Install alongside official Brave. Existing Brave data is not migrated.  
 
-[revanced-magisk-module](https://github.com/j-hc/revanced-magisk-module)
+Patches and tools:
   
 Patches: bufferk/patches-1.8.0.mpp  
 [Changelog](https://github.com/bufferk/morphe-patches/releases/tag/v1.8.0)
