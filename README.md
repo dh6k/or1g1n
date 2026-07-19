@@ -1,56 +1,66 @@
-# ReVanced Magisk Module
-[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/rvc_magisk)
-[![CI](https://github.com/j-hc/revanced-magisk-module/actions/workflows/ci.yml/badge.svg?event=schedule)](https://github.com/j-hc/revanced-magisk-module/actions/workflows/ci.yml)
+# Or1g1n Brave
 
-Extensive ReVanced builder  
+Automated build for a patched, arm64-v8a Brave APK. Build uses Morphe CLI and two patch bundles:
 
-Get the [latest CI release](https://github.com/j-hc/revanced-magisk-module/releases).
+- `bufferk/morphe-patches`
+- `MorpheApp/morphe-patches`
 
-Use [**zygisk-detach**](https://github.com/j-hc/zygisk-detach) to detach YouTube and YT Music from Play Store if you are using magisk modules. 
+Output package name: `vip.dh6k.brave.or1g1n`.
 
-<details><summary><big>Features</big></summary>
-<ul>
- <li> Supports all present and future ReVanced apps (including projects implementing the same API)</li>
- <li> Can build Magisk modules and non-root APKs</li>
- <li> Updated daily with the latest versions of apps and patches</li>
- <li> Optimizes APKs and modules for size</li>
- <li> Modules</li>
-    <ul>
-     <li> recompile invalidated odex for faster usage</li>
-     <li> receive updates from Magisk app</li>
-     <li> do not break safetynet or trigger root detections</li>
-     <li> handle installation of the correct version of the stock app and all that</li>
-     <li> support Magisk and KernelSU</li>
-    </ul>
-</ul>
-</details>
+Patched APK installs beside official Brave. It does not replace `com.brave.browser`.
 
-## To include/exclude patches or patch other apps
+## Download
 
- * Star the repo :eyes:
- * Use the repo as a [template](https://github.com/new?template_name=revanced-magisk-module&template_owner=j-hc)
- * Customize [`config.toml`](./config.toml) using [rvmm-config-gen](https://j-hc.github.io/rvmm-config-gen/)
- * Run the build [workflow](../../actions/workflows/build.yml)
- * Grab your modules and APKs from [releases](../../releases)
+Download newest APK from [Releases](../../releases/latest).
 
-also see here [`CONFIG.md`](./CONFIG.md)
+Current build target:
 
-## If you are having trouble with the classic mount method of the modules
-such as,
-- **"Reflash needed"** error after reboots
-- **"Suspicious mount detected"** warnings from root detector apps
+- Brave, arm64-v8a
+- version selected automatically from patch compatibility
+- included patch: `Brave Origin`
+- additional patch: `Change package name`
 
-You can consider using [rvmm-zygisk-mount](https://github.com/j-hc/rvmm-zygisk-mount)
+## Install
 
-## Building Locally
-### On Termux
-```console
-bash <(curl -sSf https://raw.githubusercontent.com/j-hc/revanced-magisk-module/main/build-termux.sh)
+1. Download `brave-revanced-*-arm64-v8a.apk` from latest release.
+2. Enable installation from your file manager or browser when Android asks.
+3. Install APK.
+4. Open **Or1g1n Brave**.
+
+Official Brave may stay installed. Data, extensions, and settings do not transfer automatically because package name differs.
+
+## Updates
+
+GitHub Actions builds releases automatically. Install newer APK over existing `vip.dh6k.brave.or1g1n` app to update.
+
+Check [release notes](../../releases) for built Brave version, patch-bundle versions, and APK files.
+
+## Build locally
+
+Requirements:
+
+- Linux or Termux
+- Java 21
+- `bash`, `curl`, `unzip`, and common GNU utilities
+
+Clone repository, then run:
+
+```bash
+./build.sh config.toml
 ```
 
-### On Linux
-```console
-$ git clone https://github.com/j-hc/revanced-magisk-module --depth 1
-$ cd revanced-magisk-module
-$ ./build.sh
+Built APK appears in `build/`.
+
+Termux helper:
+
+```bash
+bash <(curl -sSf https://raw.githubusercontent.com/dh6k/or1g1n/main/build-termux.sh)
 ```
+
+## Configuration
+
+[`config.toml`](./config.toml) controls source APK, package identity, patch bundles, included patches, and build mode. Option reference: [`CONFIG.md`](./CONFIG.md).
+
+## License
+
+Project uses [GPL-3.0](./LICENSE). Brave, Morphe, and their related marks belong to their respective owners.
