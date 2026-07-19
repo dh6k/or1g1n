@@ -19,4 +19,5 @@ additional-patcher-args = """\
   """
 pkg-name = "com.brave.browser"
 arch = "arm64-v8a"
-direct-dlurl = "https://github.com/brave/brave-browser/releases/latest/download/Bravearm64Universal.apk"
+dpi = "nodpi"
+apkmirror-dlurl = "https://www.apkmirror.com/apk/brave-software/brave-browser"
