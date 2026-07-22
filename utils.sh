@@ -267,15 +267,17 @@ get_patch_last_supported_ver() {
 			epr "list-patches: '$op'"
 			return 1
 		fi
-		local ver vers="" NL=$'\n'
+		local patch_block ver vers="" NL=$'\n' package_matched=false
 		while IFS= read -r line; do
 			line="${line:1:${#line}-2}"
-			ver=$(sed -n "/^Name: $line\$/,/^\$/p" <<<"$op" | awk -v pkg="$pkg_name" '
+			patch_block=$(sed -n "/^Name: $line\$/,/^\$/p" <<<"$op")
+			if grep -qFx "Package name: $pkg_name" <<<"$patch_block"; then package_matched=true; fi
+			ver=$(awk -v pkg="$pkg_name" '
 				$0 == "Package name: " pkg { in_pkg = 1; in_versions = 0; next }
 				in_pkg && /^Package name: / { exit }
 				in_pkg && $0 == "Compatible versions:" { in_versions = 1; next }
 				in_versions && /^v?[0-9]+([.][0-9]+)*([-+][0-9A-Za-z.-]+)?$/ { print }
-			')
+			' <<<"$patch_block")
 			vers=${ver}${NL}
 		done <<<"$(list_args "$inc_sel")"
 		vers=$(awk '{$1=$1}1' <<<"$vers")
@@ -283,6 +285,8 @@ get_patch_last_supported_ver() {
 			get_highest_ver <<<"$vers"
 			return
 		fi
+		# A matching package without an explicit version list supports any version.
+		[ "$package_matched" = true ] && return
 	fi
 	op=$(patches_list_versions "$cli_jar" "$patches_jars" "$pkg_name") || return 1
 	op=$(sed -n '/Most common compatible versions:/,$p' <<<"$op" | sed '1d' | awk '{$1=$1}1')
