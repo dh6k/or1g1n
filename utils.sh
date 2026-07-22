@@ -697,6 +697,13 @@ build_rv() {
 	fi
 	if [ $get_latest_ver = true ]; then
 		if [ "$version_mode" = beta ]; then __AAV__="true"; else __AAV__="false"; fi
+		if ! isoneof "$dl_from" "${tried_dl[@]}"; then
+			if ! get_${dl_from}_resp "${args[${dl_from}_dlurl]}"; then
+				epr "ERROR: Could not get '${table}' from '${dl_from}'"
+				return 0
+			fi
+			tried_dl+=("$dl_from")
+		fi
 		pkgvers=$(get_"${dl_from}"_vers)
 		version=$(get_highest_ver <<<"$pkgvers") || version=$(head -1 <<<"$pkgvers")
 	fi
