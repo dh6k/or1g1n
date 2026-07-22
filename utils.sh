@@ -270,7 +270,12 @@ get_patch_last_supported_ver() {
 		local ver vers="" NL=$'\n'
 		while IFS= read -r line; do
 			line="${line:1:${#line}-2}"
-			ver=$(sed -n "/^Name: $line\$/,/^\$/p" <<<"$op" | sed -n "/^Compatible versions:\$/,/^\$/p" | tail -n +2)
+			ver=$(sed -n "/^Name: $line\$/,/^\$/p" <<<"$op" | awk -v pkg="$pkg_name" '
+				$0 == "Package name: " pkg { in_pkg = 1; in_versions = 0; next }
+				in_pkg && /^Package name: / { exit }
+				in_pkg && $0 == "Compatible versions:" { in_versions = 1; next }
+				in_versions && /^v?[0-9]+([.][0-9]+)*([-+][0-9A-Za-z.-]+)?$/ { print }
+			')
 			vers=${ver}${NL}
 		done <<<"$(list_args "$inc_sel")"
 		vers=$(awk '{$1=$1}1' <<<"$vers")
@@ -301,7 +306,7 @@ patches_list_versions() {
 	cli_name=$(basename "$cli_jar")
 	if [ "${cli_name::8}" = revanced ]; then cmd_base+=" -b"; fi
 
-	cmd="${cmd_base} --patches${patch_args} -f '$pkg_name'"
+	cmd="${cmd_base} --patches${patch_args} -f '$pkg_name' -x"
 	if op=$(eval "$cmd" 2>&1); then
 		echo "$op"
 		return
@@ -324,7 +329,7 @@ patches_list() {
 	local cli_jar=$1 patches_jars=$2 pkg_name=$3 op
 	local patch_files=()
 	mapfile -t patch_files <<<"$patches_jars"
-	if ! op=$(java -jar "$cli_jar" list-patches --patches "${patch_files[@]}" -f "$pkg_name" --with-versions --with-packages 2>&1); then
+	if ! op=$(java -jar "$cli_jar" list-patches --patches "${patch_files[@]}" -f "$pkg_name" --with-versions --with-packages -x 2>&1); then
 		if [ "${#patch_files[@]}" -ne 1 ]; then
 			epr "Could not get patches list from multiple bundles $cli_jar: '$op'"
 			return 1
