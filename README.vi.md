@@ -24,7 +24,7 @@ Mục tiêu build hiện tại:
 
 ## Cài đặt
 
-1. Tải `brave-revanced-*-arm64-v8a.apk` từ release mới nhất.
+1. Tải `brave-or1g1n-*-arm64-v8a.apk` từ release mới nhất.
 2. Cho phép cài đặt từ trình quản lý tệp hoặc trình duyệt khi Android hỏi.
 3. Cài APK.
 4. Mở **Or1g1n Brave**.
