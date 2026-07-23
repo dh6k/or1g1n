@@ -580,7 +580,7 @@ get_direct_vers() {
 }
 get_direct_pkg_name() { cut -d- -f1 <<<"$__DIRECT_APKNAME__"; }
 get_direct_resp() {
-	local url=$1 release_json tag asset_api_url
+	local url=$1 release_json tag asset_api_url channel release_prefix
 	__DIRECT_APKNAME__=$(awk -F/ '{print $NF}' <<<"${url%%[?#]*}")
 	__DIRECT_VERSION__=""
 	__DIRECT_GITHUB_REPO__=""
@@ -590,13 +590,47 @@ get_direct_resp() {
 	if [[ $url =~ ^https://github\.com/([^/]+/[^/]+)/releases/latest/download/([^/?#]+) ]]; then
 		__DIRECT_GITHUB_REPO__=${BASH_REMATCH[1]}
 		__DIRECT_GITHUB_ASSET__=${BASH_REMATCH[2]}
-		release_json=$(gh_req "https://api.github.com/repos/${__DIRECT_GITHUB_REPO__}/releases/latest" -) || return 1
-		tag=$(jq -e -r '.tag_name // empty' <<<"$release_json") || return 1
+		if [[ $url =~ [?\&]channel=([^&#]+) ]]; then
+			channel=${BASH_REMATCH[1]}
+			case "$channel" in
+				nightly-android) release_prefix=Nightly ;;
+				beta-android) release_prefix=Beta ;;
+				release-android) release_prefix=Release ;;
+				*)
+					epr "Unsupported direct download channel '${channel}'"
+					return 1
+					;;
+			esac
+			release_json=$(gh_req "https://api.github.com/repos/${__DIRECT_GITHUB_REPO__}/releases?per_page=100" -) || return 1
+			release_json=$(jq -e -c --arg prefix "$release_prefix" --arg asset "$__DIRECT_GITHUB_ASSET__" '
+				map(select(
+					((.name // "") | startswith($prefix + " v")) and
+					(any(.assets[]?; .name == $asset))
+				))
+				| sort_by(.published_at // .created_at)
+				| reverse
+				| .[0] // empty
+			' <<<"$release_json") || {
+				epr "Could not find latest '${release_prefix}' release with asset '${__DIRECT_GITHUB_ASSET__}'"
+				return 1
+			}
+			tag=$(jq -e -r '.tag_name // empty' <<<"$release_json") || return 1
+			__DIRECT_VERSION__=${tag#v}
+		else
+			release_json=$(gh_req "https://api.github.com/repos/${__DIRECT_GITHUB_REPO__}/releases/latest" -) || return 1
+			tag=$(jq -e -r '.tag_name // empty' <<<"$release_json") || return 1
+			__DIRECT_VERSION__=${tag#v}
+		fi
 		asset_api_url=$(jq -e -r --arg asset "$__DIRECT_GITHUB_ASSET__" '.assets[] | select(.name == $asset) | .browser_download_url' <<<"$release_json") || {
-			epr "Could not find direct download asset '${__DIRECT_GITHUB_ASSET__}' in latest release of '${__DIRECT_GITHUB_REPO__}'"
+			epr "Could not find direct download asset '${__DIRECT_GITHUB_ASSET__}' in selected release of '${__DIRECT_GITHUB_REPO__}'"
 			return 1
 		}
 		[ -n "$tag" ] && [ -n "$asset_api_url" ] || return 1
+		if [[ $tag == v* ]]; then __DIRECT_GITHUB_TAG_PREFIX__=v; fi
+	elif [[ $url =~ ^https://github\.com/([^/]+/[^/]+)/releases/download/([^/]+)/([^/?#]+) ]]; then
+		__DIRECT_GITHUB_REPO__=${BASH_REMATCH[1]}
+		tag=${BASH_REMATCH[2]}
+		__DIRECT_GITHUB_ASSET__=${BASH_REMATCH[3]}
 		__DIRECT_VERSION__=${tag#v}
 		if [[ $tag == v* ]]; then __DIRECT_GITHUB_TAG_PREFIX__=v; fi
 	fi
