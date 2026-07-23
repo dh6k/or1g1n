@@ -24,7 +24,7 @@ Current build target:
 
 ## Install
 
-1. Download `brave-revanced-*-arm64-v8a.apk` from latest release.
+1. Download `brave-or1g1n-*-arm64-v8a.apk` from latest release.
 2. Enable installation from your file manager or browser when Android asks.
 3. Install APK.
 4. Open **Or1g1n Brave**.
