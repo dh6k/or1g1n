@@ -35,14 +35,37 @@ jobs:
             fi
           fi
 
-      - name: Get next version code
+      - name: Get next version code and release title
         id: next_ver_code
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG=$(gh release list -L 1 | awk -F '\t' '{print $3}')
           if [ -z "$TAG" ]; then TAG=0; fi
-          echo "NEXT_VER_CODE=$((TAG + 1))" >> $GITHUB_OUTPUT
+          echo "NEXT_VER_CODE=$((TAG + 1))" >> "$GITHUB_OUTPUT"
+
+          RELEASE_DATE=$(TZ=Asia/Bangkok date +%Y.%m.%d)
+          RELEASES=$(gh release list -L 100 --json name,publishedAt)
+          DAILY_RELEASE_COUNT=0
+          while IFS= read -r PUBLISHED_AT; do
+            if [ "$(TZ=Asia/Bangkok date -d "$PUBLISHED_AT" +%Y.%m.%d)" = "$RELEASE_DATE" ]; then
+              DAILY_RELEASE_COUNT=$((DAILY_RELEASE_COUNT + 1))
+            fi
+          done < <(jq -r '.[].publishedAt // empty' <<<"$RELEASES")
+          LAST_DAILY_INDEX=$(jq -r --arg prefix "${RELEASE_DATE}_" '
+            [.[].name
+              | select(startswith($prefix))
+              | sub("^.*_"; "")
+              | tonumber?
+            ]
+            | max // 0
+          ' <<<"$RELEASES")
+          if ((LAST_DAILY_INDEX > DAILY_RELEASE_COUNT)); then
+            NEXT_DAILY_INDEX=$((LAST_DAILY_INDEX + 1))
+          else
+            NEXT_DAILY_INDEX=$((DAILY_RELEASE_COUNT + 1))
+          fi
+          echo "RELEASE_TITLE=${RELEASE_DATE}_${NEXT_DAILY_INDEX}" >> "$GITHUB_OUTPUT"
 
       - name: Build modules/APKs
         run: if [ -f "config.json" ]; then ./build.sh config.json; else ./build.sh config.toml; fi
@@ -64,13 +87,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.next_ver_code.outputs.NEXT_VER_CODE }}
+          TITLE: ${{ steps.next_ver_code.outputs.RELEASE_TITLE }}
           BODY: ${{ steps.get_output.outputs.BUILD_LOG }}
         run: |
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --title "Release" --notes "$BODY"
+            gh release edit "$TAG" --title "$TITLE" --notes "$BODY"
             gh release upload "$TAG" ./build/* --clobber
           else
-            gh release create "$TAG" ./build/* --title "Release" --notes "$BODY"
+            gh release create "$TAG" ./build/* --title "$TITLE" --notes "$BODY"
           fi
 
       - name: Update modules changelog and update json
