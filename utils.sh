@@ -581,6 +581,54 @@ get_direct_vers() {
 	if [ -n "${__DIRECT_VERSION__-}" ]; then echo "$__DIRECT_VERSION__"; else cut -d- -f2 <<<"$__DIRECT_APKNAME__"; fi
 }
 get_direct_pkg_name() { cut -d- -f1 <<<"$__DIRECT_APKNAME__"; }
+get_direct_github_channel_releases() {
+	local repo=$1 asset=$2 page=1 page_json page_count page_best best='[]'
+	if [ "${__DIRECT_RELEASES_CACHE_REPO__-}" = "$repo" ] &&
+		[ "${__DIRECT_RELEASES_CACHE_ASSET__-}" = "$asset" ] &&
+		[ -n "${__DIRECT_RELEASES_CACHE__-}" ]; then
+		return
+	fi
+
+	while :; do
+		page_json=$(gh_req "https://api.github.com/repos/${repo}/releases?per_page=100&page=${page}" -) || return 1
+		page_count=$(jq -e 'length' <<<"$page_json") || return 1
+		[ "$page_count" -eq 0 ] && break
+
+		page_best=$(jq -e -c --arg asset "$asset" '
+			[
+				.[]
+				| select(any(.assets[]?; .name == $asset))
+				| ((.name // "") | try capture("^(?<channel>Release|Beta|Nightly) v") catch empty) as $name
+				| ((.tag_name // "") | try capture("^v?(?<version>[0-9]+(?:\\.[0-9]+)+)$") catch empty) as $tag
+				| . + {
+					__direct_channel: (
+						if $name.channel == "Release" then "release-android"
+						elif $name.channel == "Beta" then "beta-android"
+						else "nightly-android"
+						end
+					),
+					__direct_version: ($tag.version | split(".") | map(tonumber))
+				}
+			]
+			| sort_by(.__direct_channel, .__direct_version)
+			| group_by(.__direct_channel)
+			| map(last)
+		' <<<"$page_json") || return 1
+		best=$(jq -e -c -s '
+			add
+			| sort_by(.__direct_channel, .__direct_version)
+			| group_by(.__direct_channel)
+			| map(last)
+		' <<<"${best}"$'\n'"${page_best}") || return 1
+
+		[ "$page_count" -lt 100 ] && break
+		((page++))
+	done
+	[ "$best" != '[]' ] || return 1
+	__DIRECT_RELEASES_CACHE_REPO__=$repo
+	__DIRECT_RELEASES_CACHE_ASSET__=$asset
+	__DIRECT_RELEASES_CACHE__=$best
+}
 get_direct_resp() {
 	local url=$1 release_json tag asset_api_url channel release_prefix
 	__DIRECT_APKNAME__=$(awk -F/ '{print $NF}' <<<"${url%%[?#]*}")
@@ -603,16 +651,10 @@ get_direct_resp() {
 					return 1
 					;;
 			esac
-			release_json=$(gh_req "https://api.github.com/repos/${__DIRECT_GITHUB_REPO__}/releases?per_page=100" -) || return 1
-			release_json=$(jq -e -c --arg prefix "$release_prefix" --arg asset "$__DIRECT_GITHUB_ASSET__" '
-				map(select(
-					((.name // "") | startswith($prefix + " v")) and
-					(any(.assets[]?; .name == $asset))
-				))
-				| sort_by(.published_at // .created_at)
-				| reverse
-				| .[0] // empty
-			' <<<"$release_json") || {
+			get_direct_github_channel_releases "$__DIRECT_GITHUB_REPO__" "$__DIRECT_GITHUB_ASSET__" || return 1
+			release_json=$(jq -e -c --arg channel "$channel" '
+				.[] | select(.__direct_channel == $channel)
+			' <<<"$__DIRECT_RELEASES_CACHE__") || {
 				epr "Could not find latest '${release_prefix}' release with asset '${__DIRECT_GITHUB_ASSET__}'"
 				return 1
 			}
