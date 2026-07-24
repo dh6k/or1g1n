@@ -2,8 +2,8 @@ name: CI
 on:
   workflow_dispatch:
   schedule:
-    # GitHub Actions cron uses UTC: 14:00-17:00 UTC = 21:00-00:00 Vietnam time.
-    - cron: "0 14-17 * * *"
+    # GitHub Actions cron uses UTC: 02:00-05:00 UTC = 09:00-12:00 Vietnam time.
+    - cron: "0 2-5 * * *"
 
 jobs:
   check:
