@@ -4,7 +4,7 @@
 
 Tự động build APK Brave đã patch cho kiến trúc arm64-v8a. Bản build dùng Morphe CLI và hai bộ patch:
 
-- `bufferk/morphe-patches`
+- `dh6k/morphe-patches`
 - `MorpheApp/morphe-patches`
 
 Package name đầu ra: `vip.dh6k.brave.or1g1n`.
