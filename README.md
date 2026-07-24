@@ -4,7 +4,7 @@ English is shown by default. Vietnamese version: [README.vi.md](./README.vi.md).
 
 Automated build for a patched, arm64-v8a Brave APK. Build uses Morphe CLI and two patch bundles:
 
-- `bufferk/morphe-patches`
+- `dh6k/morphe-patches`
 - `MorpheApp/morphe-patches`
 
 Output package name: `vip.dh6k.brave.or1g1n`.
