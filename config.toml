@@ -11,8 +11,13 @@ cli-source = "MorpheApp/morphe-cli"
 rv-brand = "or1g1n"
 build-mode = "apk"
 version = "latest"
-included-patches = "'Brave Origin' 'Change app name' 'Change app icon'"
-patcher-args = "-ObraveAppName=0r1g1n -OcustomIcon=assets/brave_origin_icon.png"
+included-patches = "'Brave Origin'"
+patcher-args = """\
+  -e "Change app name" \
+  -ObraveAppName=0r1g1n \
+  -e "Change app icon" \
+  -OcustomIcon=assets/brave_origin_icon.png \
+  """
 additional-included-patches = "'Change package name'"
 exclusive-patches = true
 additional-patcher-args = """\
@@ -34,8 +39,13 @@ cli-source = "MorpheApp/morphe-cli"
 rv-brand = "or1g1n"
 build-mode = "apk"
 version = "latest"
-included-patches = "'Brave Origin' 'Change app name' 'Change app icon'"
-patcher-args = "-ObraveAppName='0r1g1n beta' -OcustomIcon=assets/brave_origin_icon.png"
+included-patches = "'Brave Origin'"
+patcher-args = """\
+  -e "Change app name" \
+  -ObraveAppName="0r1g1n beta" \
+  -e "Change app icon" \
+  -OcustomIcon=assets/brave_origin_icon.png \
+  """
 additional-included-patches = "'Change package name'"
 exclusive-patches = true
 additional-patcher-args = """\
