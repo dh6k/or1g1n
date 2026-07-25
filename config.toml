@@ -14,7 +14,7 @@ version = "latest"
 included-patches = "'Brave Origin'"
 patcher-args = """\
   -e "Change app name" \
-  -ObraveAppName=0r1g1n \
+  -OappName=0r1g1n \
   -e "Change app icon" \
   -OcustomIcon=assets/brave_origin_icon.png \
   """
@@ -42,7 +42,7 @@ version = "latest"
 included-patches = "'Brave Origin'"
 patcher-args = """\
   -e "Change app name" \
-  -ObraveAppName="0r1g1n beta" \
+  -OappName="0r1g1n beta" \
   -e "Change app icon" \
   -OcustomIcon=assets/brave_origin_icon.png \
   """
