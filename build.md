@@ -1,4 +1,4 @@
-Brave: 1.92.144  
+Brave: 1.93.127  
 Brave-Beta: 1.94.95  
 
 Or1g1n Brave build  
