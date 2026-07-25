@@ -12,7 +12,7 @@ rv-brand = "or1g1n"
 build-mode = "apk"
 version = "latest"
 included-patches = "'Brave Origin' 'Change app name' 'Change app icon'"
-patcher-args = "-OappName=0r1g1n -OcustomIcon=assets/brave_origin_icon.png"
+patcher-args = "-ObraveAppName=0r1g1n -OcustomIcon=assets/brave_origin_icon.png"
 additional-included-patches = "'Change package name'"
 exclusive-patches = true
 additional-patcher-args = """\
@@ -35,7 +35,7 @@ rv-brand = "or1g1n"
 build-mode = "apk"
 version = "latest"
 included-patches = "'Brave Origin' 'Change app name' 'Change app icon'"
-patcher-args = "-OappName='0r1g1n beta' -OcustomIcon=assets/brave_origin_icon.png"
+patcher-args = "-ObraveAppName='0r1g1n beta' -OcustomIcon=assets/brave_origin_icon.png"
 additional-included-patches = "'Change package name'"
 exclusive-patches = true
 additional-patcher-args = """\
