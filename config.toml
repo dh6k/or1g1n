@@ -5,13 +5,14 @@ remove-rv-integrations-checks = false
 [Brave]
 app-name = "Brave"
 patches-source = "dh6k/morphe-patches"
+patches-version = "dev"
 additional-patches-source = "MorpheApp/morphe-patches"
 cli-source = "MorpheApp/morphe-cli"
 rv-brand = "or1g1n"
 build-mode = "apk"
 version = "latest"
-included-patches = "'Brave Origin' 'Change app name'"
-patcher-args = "-OappName=0r1g1n"
+included-patches = "'Brave Origin' 'Change app name' 'Change app icon'"
+patcher-args = "-OappName=0r1g1n -OcustomIcon=assets/brave_origin_icon.png"
 additional-included-patches = "'Change package name'"
 exclusive-patches = true
 additional-patcher-args = """\
@@ -27,13 +28,14 @@ direct-dlurl = "https://github.com/brave/brave-browser/releases/latest/download/
 [Brave-Beta]
 app-name = "Brave Beta"
 patches-source = "dh6k/morphe-patches"
+patches-version = "dev"
 additional-patches-source = "MorpheApp/morphe-patches"
 cli-source = "MorpheApp/morphe-cli"
 rv-brand = "or1g1n"
 build-mode = "apk"
 version = "latest"
-included-patches = "'Brave Origin' 'Change app name'"
-patcher-args = "-OappName='0r1g1n beta'"
+included-patches = "'Brave Origin' 'Change app name' 'Change app icon'"
+patcher-args = "-OappName='0r1g1n beta' -OcustomIcon=assets/brave_origin_icon.png"
 additional-included-patches = "'Change package name'"
 exclusive-patches = true
 additional-patcher-args = """\
