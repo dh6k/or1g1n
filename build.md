@@ -7,8 +7,8 @@ Install alongside official Brave. Existing Brave data is not migrated.
 
 Patches and tools:
   
-Patches: dh6k/patches-1.1.0-dev.2.mpp  
-[Changelog](https://github.com/dh6k/morphe-patches/releases/tag/v1.1.0-dev.2)
+Patches: dh6k/patches-1.1.0-dev.3.mpp  
+[Changelog](https://github.com/dh6k/morphe-patches/releases/tag/v1.1.0-dev.3)
 
 CLI: MorpheApp/morphe-desktop-1.12.0-all.jar  
 Patches: MorpheApp/patches-1.36.0.mpp  
