@@ -181,6 +181,20 @@ config_update() {
 		t=$(toml_get_table "$table_name")
 		enabled=$(toml_get "$t" enabled) || enabled=true
 		if [ "$enabled" = "false" ]; then continue; fi
+		version_mode=$(toml_get "$t" version) || version_mode=auto
+		direct_dlurl=$(toml_get "$t" direct-dlurl) || direct_dlurl=""
+		if isoneof "$version_mode" latest beta && [ -n "$direct_dlurl" ]; then
+			if get_direct_resp "$direct_dlurl"; then
+				latest_version=$(get_direct_vers)
+				built_line=$(grep -F -m1 "$table_name: " build.md || :)
+				built_version=${built_line#"$table_name: "}
+				built_version=${built_version%%[[:space:]]*}
+				if [ -n "$latest_version" ] && [ "$latest_version" != "$built_version" ]; then
+					prcfg=true
+					upped+=("$table_name")
+				fi
+			fi
+		fi
 		PATCHES_SRC=$(toml_get "$t" patches-source) || PATCHES_SRC=$DEF_PATCHES_SRC
 		PATCHES_VER=$(toml_get "$t" patches-version) || PATCHES_VER=$DEF_PATCHES_VER
 		if [[ -v sources["$PATCHES_SRC/$PATCHES_VER"] ]]; then

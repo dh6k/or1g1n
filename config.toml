@@ -57,3 +57,32 @@ pkg-name = "com.brave.browser_beta"
 arch = "arm64-v8a"
 dpi = "nodpi"
 direct-dlurl = "https://github.com/brave/brave-browser/releases/latest/download/BraveMonoarm64.apk?channel=beta-android"
+
+[Brave-Nightly]
+enabled = false
+app-name = "Brave Nightly"
+patches-source = "dh6k/morphe-patches"
+patches-version = "dev"
+additional-patches-source = "MorpheApp/morphe-patches"
+cli-source = "MorpheApp/morphe-cli"
+rv-brand = "or1g1n"
+build-mode = "apk"
+version = "latest"
+included-patches = "'Brave Origin'"
+patcher-args = """\
+  -e "Change app name" \
+  -OappName="0r1g1n nightly" \
+  -e "Change app icon" \
+  -OcustomIcon=assets/brave_origin_icon.png \
+  """
+additional-included-patches = "'Change package name'"
+exclusive-patches = true
+additional-patcher-args = """\
+  -OpackageName=vip.dh6k.brave.or1g1n.nightly \
+  -OupdatePermissions=true \
+  -OupdateProviders=true \
+  """
+pkg-name = "com.brave.browser_nightly"
+arch = "arm64-v8a"
+dpi = "nodpi"
+direct-dlurl = "https://github.com/brave/brave-browser/releases/latest/download/BraveMonoarm64.apk?channel=nightly-android"
