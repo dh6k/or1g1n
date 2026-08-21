@@ -6,6 +6,14 @@ on:
         type: boolean
         required: false
         default: true
+      brave_version:
+        type: string
+        required: false
+        default: ""
+      brave_beta_version:
+        type: string
+        required: false
+        default: ""
 
   workflow_dispatch:
 
@@ -27,10 +35,37 @@ jobs:
 
       - name: Update config
         if: ${{ inputs.from_ci }}
+        env:
+          BRAVE_VERSION: ${{ inputs.brave_version }}
+          BRAVE_BETA_VERSION: ${{ inputs.brave_beta_version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if git checkout origin/update build.md; then
             UPDATE_CFG=$(./build.sh config.toml --config-update)
-            if [ "$UPDATE_CFG" ]; then
+
+            if [ -n "$BRAVE_VERSION" ] || [ -n "$BRAVE_BETA_VERSION" ]; then
+              ARCH=$(uname -m)
+              TOML="./bin/toml/tq-${ARCH}"
+              FULL_CFG=$($TOML --output json --file config.toml .)
+
+              if [ -n "$UPDATE_CFG" ]; then
+                CI_CFG=$UPDATE_CFG
+              else
+                CI_CFG=$(jq 'to_entries | map(select(.value | type != "object")) | from_entries' <<<"$FULL_CFG")
+              fi
+
+              if [ -n "$BRAVE_VERSION" ]; then
+                CI_CFG=$(jq --argjson full "$FULL_CFG" --arg version "$BRAVE_VERSION" \
+                  '.Brave = ($full.Brave | .version = $version)' <<<"$CI_CFG")
+              fi
+              if [ -n "$BRAVE_BETA_VERSION" ]; then
+                CI_CFG=$(jq --argjson full "$FULL_CFG" --arg version "$BRAVE_BETA_VERSION" \
+                  '."Brave-Beta" = ($full."Brave-Beta" | .version = $version)' <<<"$CI_CFG")
+              fi
+              UPDATE_CFG=$CI_CFG
+            fi
+
+            if [ -n "$UPDATE_CFG" ]; then
               echo "$UPDATE_CFG" > config.json
             fi
           fi
