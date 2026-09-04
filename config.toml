@@ -18,7 +18,7 @@ patcher-args = """\
   -e "Change app icon" \
   -OcustomIcon=assets/brave_origin_icon.png \
   """
-additional-included-patches = "'Change package name'"
+additional-included-patches = "'Clone app'"
 exclusive-patches = true
 additional-patcher-args = """\
   -OpackageName=vip.dh6k.brave.or1g1n \
@@ -46,7 +46,7 @@ patcher-args = """\
   -e "Change app icon" \
   -OcustomIcon=assets/brave_origin_beta_icon.png \
   """
-additional-included-patches = "'Change package name'"
+additional-included-patches = "'Clone app'"
 exclusive-patches = true
 additional-patcher-args = """\
   -OpackageName=vip.dh6k.brave.or1g1n.beta \
@@ -74,7 +74,7 @@ patcher-args = """\
   -e "Change app icon" \
   -OcustomIcon=assets/brave_origin_nightly_icon.png \
   """
-additional-included-patches = "'Change package name'"
+additional-included-patches = "'Clone app'"
 exclusive-patches = true
 additional-patcher-args = """\
   -OpackageName=vip.dh6k.brave.or1g1n.nightly \

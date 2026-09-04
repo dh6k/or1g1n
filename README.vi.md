@@ -20,7 +20,7 @@ Mục tiêu build hiện tại:
 - Brave, arm64-v8a
 - phiên bản tự chọn theo tính tương thích của patch
 - patch gồm: `Brave Origin`
-- patch bổ sung: `Change package name`
+- patch bổ sung: `Clone app`
 
 ## Cài đặt
 
@@ -52,7 +52,7 @@ Có thể thiết lập Bitwarden qua [bitwarden.com](https://bitwarden.com) ho�
 
 Self-host có thể tránh hỏi mã xác minh email nhiều lần và có một số tính năng premium, giúp giảm chi phí. Nhớ sao lưu hoặc dịch chuyển toàn bộ mật khẩu từ password manager khác trước khi chuyển đổi.
 
-Bản build hiện tại dùng patch `Change package name` của Morphe với cả `Update Permissions` và `Update Providers`. Hãy cài release mới nhất trước khi thử passkey lại.
+Bản build hiện tại dùng patch `Clone app` của Morphe với cả `Update Permissions` và `Update Providers`. Hãy cài release mới nhất trước khi thử passkey lại.
 
 Với Bitwarden, bắt đầu đăng nhập passkey từ Or1g1n Brave. Khi Bitwarden yêu cầu tin cậy ứng dụng không nhận diện, hãy xác minh nó được mở bởi APK từ release của repo này, rồi chấp thuận. Sau đó thử lại.
 

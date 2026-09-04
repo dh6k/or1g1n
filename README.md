@@ -20,7 +20,7 @@ Current build target:
 - Brave, arm64-v8a
 - version selected automatically from patch compatibility
 - included patch: `Brave Origin`
-- additional patch: `Change package name`
+- additional patch: `Clone app`
 
 ## Install
 
@@ -52,7 +52,7 @@ Set up Bitwarden with [bitwarden.com](https://bitwarden.com) or [bitwarden.eu](h
 
 Self-hosting can avoid repeated email-verification prompts and includes some premium features, which can reduce subscription costs. Back up or migrate every password from other password managers before switching.
 
-Current builds apply Morphe's `Change package name` patch with both `Update Permissions` and `Update Providers` enabled. Install latest release before retrying passkeys.
+Current builds apply Morphe's `Clone app` patch with both `Update Permissions` and `Update Providers` enabled. Install latest release before retrying passkeys.
 
 For Bitwarden, start passkey sign-in from Or1g1n Brave. When Bitwarden asks to trust the unrecognized app, verify it was opened by the APK from this repository's release, then approve it. Retry passkey sign-in after approval.
 
