@@ -11,7 +11,7 @@ cli-source = "MorpheApp/morphe-cli"
 rv-brand = "or1g1n"
 build-mode = "apk"
 version = "latest"
-included-patches = "'Brave Origin'"
+included-patches = "'Brave Origin' 'Disable analytics'"
 patcher-args = """\
   -e "Change app name" \
   -OappName=0r1g1n \
@@ -39,7 +39,7 @@ cli-source = "MorpheApp/morphe-cli"
 rv-brand = "or1g1n"
 build-mode = "apk"
 version = "latest"
-included-patches = "'Brave Origin'"
+included-patches = "'Brave Origin' 'Disable analytics'"
 patcher-args = """\
   -e "Change app name" \
   -OappName="0r1g1n beta" \
@@ -67,7 +67,7 @@ cli-source = "MorpheApp/morphe-cli"
 rv-brand = "or1g1n"
 build-mode = "apk"
 version = "latest"
-included-patches = "'Brave Origin'"
+included-patches = "'Brave Origin' 'Disable analytics'"
 patcher-args = """\
   -e "Change app name" \
   -OappName="0r1g1n nightly" \
