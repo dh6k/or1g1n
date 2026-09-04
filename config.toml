@@ -44,7 +44,7 @@ patcher-args = """\
   -e "Change app name" \
   -OappName="0r1g1n beta" \
   -e "Change app icon" \
-  -OcustomIcon=assets/brave_origin_icon.png \
+  -OcustomIcon=assets/brave_origin_beta_icon.png \
   """
 additional-included-patches = "'Change package name'"
 exclusive-patches = true
@@ -72,7 +72,7 @@ patcher-args = """\
   -e "Change app name" \
   -OappName="0r1g1n nightly" \
   -e "Change app icon" \
-  -OcustomIcon=assets/brave_origin_icon.png \
+  -OcustomIcon=assets/brave_origin_nightly_icon.png \
   """
 additional-included-patches = "'Change package name'"
 exclusive-patches = true
