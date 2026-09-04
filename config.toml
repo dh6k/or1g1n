@@ -59,7 +59,6 @@ dpi = "nodpi"
 direct-dlurl = "https://github.com/brave/brave-browser/releases/latest/download/BraveMonoarm64.apk?channel=beta-android"
 
 [Brave-Nightly]
-enabled = false
 app-name = "Brave Nightly"
 patches-source = "dh6k/morphe-patches"
 patches-version = "dev"
