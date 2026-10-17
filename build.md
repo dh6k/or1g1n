@@ -1,6 +1,5 @@
-Brave: 1.97.59  
-Brave-Beta: 1.99.45  
-Brave-Nightly: 1.100.6  
+Brave: 1.98.58  
+Brave-Nightly: 1.100.9  
 
 Or1g1n Brave build  
 Package: `vip.dh6k.brave.or1g1n`  
@@ -14,3 +13,6 @@ Patches: dh6k/patches-1.9.0-dev.16.mpp
 CLI: MorpheApp/morphe-desktop-1.18.1-all.jar  
 Patches: MorpheApp/patches-1.47.0.mpp  
 [Changelog](https://github.com/MorpheApp/morphe-patches/releases/tag/v1.47.0)  
+
+Skipped:  
+Patches: dh6k/patches-1.9.0-dev.16.mpp    
