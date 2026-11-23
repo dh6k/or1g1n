@@ -1,5 +1,5 @@
-Brave: 1.100.58  
-Brave-Beta: 1.101.53  
+Brave-Beta: 1.101.54  
+Brave-Nightly: 1.102.29  
 
 Or1g1n Brave build  
 Package: `vip.dh6k.brave.or1g1n`  
